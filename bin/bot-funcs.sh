@@ -34,7 +34,7 @@ IND_PLANET_Y=325
 KEYDELAY=80
 
 # Find and initialize the Oolite window
-function init_oolite_window() {
+init_oolite_window() {
     find_oolite_window
 
     if [ -z $WID ]; then
@@ -50,141 +50,141 @@ function init_oolite_window() {
     WIN_NAME=$(xdotool getwindowname $WID)
 }
 
-function pause_shell() {
+pause_shell() {
     read -p "$*"
     xdotool windowactivate --sync $WID
 }
 
-function wait_for() {
+wait_for() {
     xdotool sleep $1
 }
 
-function left_click() {
+left_click() {
     xdotool mousedown 1
     wait_for 0.5
     xdotool mouseup 1
 }
 
-function send_key() {
+send_key() {
     xdotool key --delay $KEYDELAY "$@"
 }
 
-function key_press() {
+key_press() {
     xdotool keydown --delay $KEYDELAY $1
     wait_for $2
     xdotool keyup --delay $KEYDELAY $1
 }
 
-function pitch_up() {
+pitch_up() {
     key_press Down $1
 }
 
-function pitch_down() {
+pitch_down() {
     key_press Up $1
 }
 
-function rotate_ccw() {
+rotate_ccw() {
     key_press Left $1
 }
 
-function rotate_cw() {
+rotate_cw() {
     key_press Right $1
 }
 
-function yaw_left() {
+yaw_left() {
     key_press comma $1
 }
 
-function yaw_right() {
+yaw_right() {
     key_press period $1
 }
 
-function launch() {
+launch() {
     send_key F1
     wait_for 2
 }
 
-function dock() {
+dock() {
     send_key shift+c
     wait_for 4
 }
 
-function fire_injectors() {
+fire_injectors() {
     key_press i $1
 }
 
-function jump() {
+jump() {
     send_key j
 }
 
-function enter_hyper() {
+enter_hyper() {
     send_key h
 
     # Wait for 20 seconds for the ship to hyper and recover
     wait_for 20
 }
 
-function goto_status() {
+goto_status() {
     send_key 5
 }
 
-function goto_market() {
+goto_market() {
     send_key 8
 }
 
-function goto_system_nav() {
+goto_system_nav() {
     # Make sure we don't go to the galactic chart by
     # going to the market screen first.
     goto_market
     send_key 6
 }
 
-function quick_save() {
+quick_save() {
     send_key 2
     send_key Return
 }
 
-function refuel() {
+refuel() {
     send_key 3
     send_key Return
 }
 
-function buy_furs() {
+buy_furs() {
     goto_status
     goto_market
     send_key Down Down Down Down Down Down Down Down Down Down Down
     send_key Return
 }
 
-function sell_furs() {
+sell_furs() {
     buy_furs
 }
 
-function buy_computers() {
+buy_computers() {
     goto_status
     goto_market
     send_key Down Down Down Down Down Down Down
     send_key Return
 }
 
-function sell_computers() {
+sell_computers() {
     buy_computers
 }
 
-function mark_xexedi() {
+mark_xexedi() {
     goto_system_nav
     xdotool mousemove --window $WID $IND_PLANET_X $IND_PLANET_Y
     left_click
 }
 
-function mark_xeoner() {
+mark_xeoner() {
     goto_system_nav
     xdotool mousemove --window $WID $AG_PLANET_X $AG_PLANET_Y
     left_click
 }
 
 # Find the Oolite window and store the ID
-function find_oolite_window() {
+find_oolite_window() {
     WID=$(xdotool search --name "Oolite v1.80" | head -1)
 }
 
@@ -192,7 +192,7 @@ function find_oolite_window() {
 # Screen capture functions
 #
 
-function capture_snapshot() {
+capture_snapshot() {
     # Store the args in named vars
     local width=$1
     local height=$2
@@ -205,25 +205,25 @@ function capture_snapshot() {
     xwd -name "$WIN_NAME" -silent | convert xwd:- -depth 8 -crop $cropStr txt:-
 }
 
-function capture_compass() {
+capture_compass() {
     capture_snapshot $COMPASS_WIDTH $COMPASS_HEIGHT $COMPASS_X $COMPASS_Y
 }
 
-function find_pixel() {
+find_pixel() {
     capture_compass | grep -m1 $1
 }
 
-function to_coords() {
+to_coords() {
     eval $(echo $1 | awk 'BEGIN { FS="[,:]" }; { printf("curX=%d\ncurY=%d\n", $1, $2) }')
 }
 
-function set_crosshair_coords() {
+set_crosshair_coords() {
     local greenEnough='#[0-5][0-5]F[5-9|A-F][0-5][0-5]'
     local line=$(find_pixel $greenEnough)
     to_coords $line
 }
 
-function vert_align_with_station() {
+vert_align_with_station() {
     local delay=.1
 
     # Don't bother with alignment if station is in range
@@ -248,7 +248,7 @@ function vert_align_with_station() {
     fi
 }
 
-function horz_align_with_station() {
+horz_align_with_station() {
     local delay=.1
 
     # Don't bother with alignment if station is in range
@@ -273,21 +273,21 @@ function horz_align_with_station() {
     fi
 }
 
-function capture_station_indicator() {
+capture_station_indicator() {
     capture_snapshot $STATION_IND_WIDTH $STATION_IND_HEIGHT $STATION_IND_X $STATION_IND_Y
 }
 
-function find_station_pixel() {
+find_station_pixel() {
     capture_station_indicator | grep -m1 $1
 }
 
-function set_station_ind_coords() {
+set_station_ind_coords() {
     local greenEnough='#[[:digit:]][[:digit:]][6-9|A-F][0-9|A-F][[:digit:]][[:digit:]]'
     local line=$(find_station_pixel $greenEnough)
     to_coords $line
 }
 
-function is_station_in_range() {
+is_station_in_range() {
     set_station_ind_coords
 
     if [ $curX -eq 7 ] && [ $curY -eq 2 ]; then
@@ -296,7 +296,7 @@ function is_station_in_range() {
     return 1
 }
 
-function navigate_to_station() {
+navigate_to_station() {
     is_station_in_range
 
     while [ $? -eq 1 ]; do
