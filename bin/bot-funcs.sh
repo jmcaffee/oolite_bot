@@ -37,6 +37,12 @@ KEYDELAY=80
 function init_oolite_window() {
     find_oolite_window
 
+    if [ -z $WID ]; then
+        echo 'Oolite window not found'
+        echo 'Please start Oolite and try again'
+        exit 1
+    fi
+
     # Resize the window so we have consistent coords
     xdotool windowsize $WID $WIN_WIDTH $WIN_HEIGHT
 

@@ -45,14 +45,14 @@ function run_route() {
 }
 
 
+init_oolite_window
+
 echo "To start, you should be located on Xexedi station,"
 echo "with empty cargo holds,"
 echo "and have enough fuel to get to Xeoner."
 echo
 echo "Use Ctrl-c to exit"
 echo
-
-init_oolite_window
 
 pause_shell "Press [Enter] when you're ready"
 
