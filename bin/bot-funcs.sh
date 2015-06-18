@@ -171,16 +171,38 @@ sell_computers() {
     buy_computers
 }
 
+store_mouse_location() {
+    eval $(xdotool getmouselocation --shell)
+    mouseX=$X
+    mouseY=$Y
+}
+
+restore_mouse_location() {
+    xdotool mousemove $mouseX $mouseY
+}
+
 mark_xexedi() {
+    # Save the current mouse location
+    store_mouse_location
+
     goto_system_nav
     xdotool mousemove --window $WID $IND_PLANET_X $IND_PLANET_Y
     left_click
+
+    # Restore the mouse location
+    restore_mouse_location
 }
 
 mark_xeoner() {
+    # Save the current mouse location
+    store_mouse_location
+
     goto_system_nav
     xdotool mousemove --window $WID $AG_PLANET_X $AG_PLANET_Y
     left_click
+
+    # Restore the mouse location
+    restore_mouse_location
 }
 
 # Find the Oolite window and store the ID
