@@ -1,0 +1,178 @@
+#!/usr/bin/env bash
+
+DLY=50
+ARROWDLY=100
+
+function sendkey() {
+    xdotool key --delay $DLY $1
+}
+
+function keypress() {
+    xdotool keydown --delay $DLY $1
+    xdotool sleep $2
+    xdotool keyup --delay $DLY $1
+}
+
+function leftclick() {
+    xdotool mousedown 1
+    xdotool sleep 0.5
+    xdotool mouseup 1
+}
+
+function gotostatus() {
+    sendkey 5
+}
+
+function gotonavchart() {
+    # Make sure we don't go to the galactic chart by
+    # going to the status screen first...
+    gotostatus
+    sendkey 6
+}
+
+function gotomarket() {
+    sendkey 8
+}
+
+function buyliquor() {
+    gotostatus
+    gotomarket
+    xdotool key --delay $ARROWDLY Down Down Down Down
+    xdotool key --delay $ARROWDLY Return
+}
+
+function buycomputers() {
+    gotostatus
+    gotomarket
+    xdotool key --delay $ARROWDLY Down Down Down Down Down Down Down
+    xdotool key --delay $ARROWDLY Return
+}
+
+function buyfurs() {
+    gotostatus
+    gotomarket
+    xdotool key --delay $ARROWDLY Down Down Down Down Down Down Down Down Down Down Down
+    xdotool key --delay $ARROWDLY Return
+}
+
+function quicksave() {
+    sendkey 2
+    sendkey Return
+}
+
+function refuel() {
+    gotostatus
+    sendkey 3
+    sendkey Return
+}
+
+function launch() {
+    sendkey F1
+    xdotool sleep 2
+}
+
+function aimdown() {
+    keypress Up 1.5
+}
+
+function aimup() {
+    keypress Down 1.5
+}
+
+function fireinjectors() {
+    keypress i $1
+}
+
+function dock() {
+    sendkey shift+c
+}
+
+function markxeoner() {
+    # Make sure we don't go to the galactic chart by
+    # going to the market first...
+    gotomarket
+    sendkey 6
+    xdotool mousemove --window $WID 406 218
+    leftclick
+}
+
+function markxexedi() {
+    # Make sure we don't go to the galactic chart by
+    # going to the market first...
+    gotomarket
+    sendkey 6
+    xdotool mousemove --window $WID 292 299
+    leftclick
+}
+
+function enterhyper() {
+    sendkey h
+    xdotool sleep 20
+}
+
+function jump() {
+    sendkey j
+}
+
+function pauseshell() {
+    read -p "$*"
+    xdotool windowactivate --sync $WID
+}
+
+function runroute() {
+    refuel
+    buycomputers
+    markxeoner
+    quicksave
+    launch
+    aimdown
+    fireinjectors 4
+    enterhyper
+    aimdown
+    fireinjectors 20
+    jump
+    sleep 15
+    aimup
+
+    echo "Maneuver to Xeoner then..."
+    pauseshell "Press [Enter] when you've docked"
+
+    # Re-buying computers is the same as selling them
+    buycomputers
+    buyfurs
+    refuel
+    markxexedi
+    quicksave
+    launch
+    aimdown
+    fireinjectors 4
+    enterhyper
+    aimdown
+    fireinjectors 20
+    jump
+    sleep 15
+    aimup
+
+    echo "Maneuver to Xexedi then..."
+    pauseshell "Press [Enter] when you've docked"
+
+    # Re-buying furs/liquor is the same as selling them
+    buyfurs
+}
+
+WID=$(xdotool search --name "Oolite v1\.80" | head -1)
+
+echo "To start, you should be located on Xexedi station,"
+echo "have NOT refueled yet,"
+echo "with empty cargo holds,"
+echo
+echo "Use Ctrl-c to exit"
+
+
+pauseshell "Press [Enter] when you're ready"
+
+COUNTER=0
+while [  $COUNTER -lt 10 ]; do
+    runroute
+done
+

@@ -1,0 +1,288 @@
+#!/usr/bin/env bash
+
+# Keystroke delay in ms
+KEYDELAY=80
+
+function pause_shell() {
+    read -p "$*"
+    xdotool windowactivate --sync $WID
+}
+
+function wait_for() {
+    xdotool sleep $1
+}
+
+function left_click() {
+    xdotool mousedown 1
+    wait_for 0.5
+    xdotool mouseup 1
+}
+
+function send_key(){
+    xdotool key --delay $KEYDELAY "$@"
+}
+
+function key_press() {
+    xdotool keydown --delay $KEYDELAY $1
+    wait_for $2
+    xdotool keyup --delay $KEYDELAY $1
+}
+
+function pitch_up() {
+    key_press Down $1
+}
+
+function pitch_down() {
+    key_press Up $1
+}
+
+function yawleft() {
+    #key_press Left $1
+    key_press comma $1
+}
+
+function yawright() {
+    #key_press Right $1
+    key_press period $1
+}
+
+function launch() {
+    send_key F1
+    wait_for 2
+}
+
+function fire_injectors() {
+    key_press i $1
+}
+
+function jump() {
+    send_key j
+}
+
+function enter_hyper() {
+    send_key h
+
+    # Wait for 20 seconds for the ship to hyper and recover
+    wait_for 20
+}
+
+function goto_status() {
+    send_key 5
+}
+
+function gotomarket() {
+    send_key 8
+}
+
+function goto_system_nav() {
+    # Make sure we don't go to the galactic chart by
+    # going to the market screen first.
+    gotomarket
+    send_key 6
+}
+
+function quick_save() {
+    send_key 2
+    send_key Return
+}
+
+function refuel() {
+    send_key 3
+    send_key Return
+}
+
+function buy_furs() {
+    goto_status
+    gotomarket
+    send_key Down Down Down Down Down Down Down Down Down Down Down
+    send_key Return
+}
+
+function sell_furs() {
+    buy_furs
+}
+
+function buy_computers() {
+    goto_status
+    gotomarket
+    send_key Down Down Down Down Down Down Down
+    send_key Return
+}
+
+function sell_computers() {
+    buy_computers
+}
+
+function mark_xexedi() {
+    goto_system_nav
+    xdotool mousemove --window $WID 292 299
+    left_click
+}
+
+function mark_xeoner() {
+    goto_system_nav
+    xdotool mousemove --window $WID 406 218
+    left_click
+}
+
+function tocoords() {
+    # Place coordinates into curX and curY vars.
+    # If no coordinates can be determined, curX and curY will = 0.
+    eval $(echo $1 | awk 'BEGIN { FS="[,:]" }; { printf("curX=%d\ncurY=%d\n", $1, $2) }')
+}
+
+function get_loc_from_compass() {
+    # Move to the Oolite window
+    xdotool mousemove --window $WID 0 0
+    # Get the mouse coordinates
+    eval $(xdotool getmouselocation --shell)
+    startx=$X
+    starty=$Y
+    let offsetx=$startx+476
+    let offsety=$starty+576
+
+    # RegEx of a 'target' green pixel:
+    greenEnough='#[0-5][0-5]F[5-9|A-F][0-5][0-5]'
+
+    # Capture a snapshot of the compass and find the first row with enough
+    # green to be the target.
+    firstGreen=$(xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+${offsetx}+${offsety}" txt:- | grep -m1 $greenEnough)
+
+    # Convert image data to X/Y coordinates
+    tocoords $firstGreen
+
+    echo X:$curX  Y:$curY
+}
+
+function at_station() {
+    if [ $COUNT -lt 4 ]; then
+        let COUNT=COUNT+1
+        echo Count:$COUNT
+        return 1
+    fi
+    return 0
+}
+
+function vert_align_with_station() {
+    get_loc_from_compass
+    until [ $curY -lt $targetMinY ]; do
+        echo Down
+        pitch_down 0.05
+        wait_for .25
+        get_loc_from_compass
+    done
+
+    if [ $curY -lt $targetMinY ]; then
+        until [ $curY -ge $targetMinY ]; do
+            echo Up
+            pitch_up 0.05
+            wait_for .25
+            get_loc_from_compass
+        done
+    fi
+    echo VERT ALIGNED
+}
+
+targetMinX=18
+targetMinY=16
+
+function horz_align_with_station() {
+    get_loc_from_compass
+    until [ $curX -lt $targetMinX ]; do
+        echo Right
+        yawright 0.01
+        wait_for .25
+        get_loc_from_compass
+    done
+
+    if [ $curX -lt $targetMinX ]; then
+        until [ $curX -ge $targetMinX ]; do
+            echo Left
+            yawleft 0.01
+            wait_for .25
+            get_loc_from_compass
+        done
+    fi
+    echo HORZ ALIGNED
+}
+
+function dock_with_station() {
+    echo DOCK!
+}
+
+function navigate_to_station() {
+    #COUNT=0
+    #while ! at_station
+    #do
+        vert_align_with_station
+        horz_align_with_station
+    #done
+
+    dock_with_station
+}
+
+#
+# Main trading route
+#
+function run_route() {
+    refuel
+    buy_computers
+    mark_xeoner
+    quick_save
+    launch
+    pitch_down 1.5
+    fire_injectors 4
+    enter_hyper
+    pitch_down 1.5
+    fire_injectors 20
+    jump
+    wait_for 15
+    pitch_up 1.6
+
+    echo
+    echo "Maneuver to Xeoner then..."
+    pause_shell "Press [Enter] when you've docked"
+
+    sell_computers
+    buy_furs
+    refuel
+    mark_xexedi
+    quick_save
+    launch
+    pitch_down 1.5
+    fire_injectors 4
+    enter_hyper
+    pitch_down 1.5
+    fire_injectors 20
+    jump
+    wait_for 15
+    pitch_up 1.6
+
+    echo
+    echo "Maneuver to Xexedi then..."
+    pause_shell "Press [Enter] when you've docked"
+
+    sell_furs
+}
+
+
+# Find the window and store the ID
+WID=$(xdotool search --name "Oolite v1.80" | head -1)
+
+echo "To start, you should be located on Xexedi station,"
+echo "have NOT refueled yet,"
+echo "with empty cargo holds,"
+echo
+echo "Use Ctrl-c to exit"
+echo
+
+pause_shell "Press [Enter] when you're ready"
+
+
+navigate_to_station
+
+#while true
+#do
+#    run_route
+#done
+

@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+source bot-funcs.sh
+
+function usage(){
+    echo 'dumpimg WID HGT X Y OUTPUTFILE'
+    echo
+    echo '  WID:        width of image'
+    echo '  HGT:        height of image'
+    echo '  X:          X coordinate of origin'
+    echo '  Y:          Y coordinate of origin'
+    echo '  OUTPUTFILE: file name/path to write image to'
+    echo
+}
+
+# Check for proper number of args.
+expected_args=5
+if [ $# -ne $expected_args ]
+then
+    usage
+    exit 1
+fi
+
+# Store the args in named vars
+width=$1
+height=$2
+origin_x=$3
+origin_y=$4
+output=$5
+
+# Build the cropping string
+crop_str="${width}x${height}+${origin_x}+${origin_y}"
+
+echo "Dumping $crop_str to $output"
+echo
+
+init_oolite_window
+
+# Capture a snapshot of the window
+xwd -name "$WIN_NAME" -silent | convert xwd:- -depth 8 -crop $crop_str $output
+
+exit 0
+

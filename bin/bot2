@@ -1,0 +1,189 @@
+#!/usr/bin/env bash
+
+# Keystroke delay in ms
+KEYDELAY=80
+
+function pauseshell() {
+    read -p "$*"
+    xdotool windowactivate --sync $WID
+}
+
+function waitfor() {
+    xdotool sleep $1
+}
+
+function leftclick() {
+    xdotool mousedown 1
+    waitfor 0.5
+    xdotool mouseup 1
+}
+
+function sendkey(){
+    xdotool key --delay $KEYDELAY "$@"
+}
+
+function keypress() {
+    xdotool keydown --delay $KEYDELAY $1
+    waitfor $2
+    xdotool keyup --delay $KEYDELAY $1
+}
+
+function pitchup() {
+    keypress Down $1
+}
+
+function pitchdown() {
+    keypress Up $1
+}
+
+function yawleft() {
+    keypress Left $1
+}
+
+function yawright() {
+    keypress Right $1
+}
+
+function launch() {
+    sendkey F1
+    waitfor 2
+}
+
+function fireinjectors() {
+    keypress i $1
+}
+
+function jump() {
+    sendkey j
+}
+
+function enterhyper() {
+    sendkey h
+
+    # Wait for 20 seconds for the ship to hyper and recover
+    waitfor 20
+}
+
+function gotostatus() {
+    sendkey 5
+}
+
+function gotomarket() {
+    sendkey 8
+}
+
+function gotosystemnav() {
+    # Make sure we don't go to the galactic chart by
+    # going to the market screen first.
+    gotomarket
+    sendkey 6
+}
+
+function quicksave() {
+    sendkey 2
+    sendkey Return
+}
+
+function refuel() {
+    sendkey 3
+    sendkey Return
+}
+
+function buyfurs() {
+    gotostatus
+    gotomarket
+    sendkey Down Down Down Down Down Down Down Down Down Down Down
+    sendkey Return
+}
+
+function sellfurs() {
+    buyfurs
+}
+
+function buycomputers() {
+    gotostatus
+    gotomarket
+    sendkey Down Down Down Down Down Down Down
+    sendkey Return
+}
+
+function sellcomputers() {
+    buycomputers
+}
+
+function markxexedi() {
+    gotosystemnav
+    xdotool mousemove --window $WID 292 299
+    leftclick
+}
+
+function markxeoner() {
+    gotosystemnav
+    xdotool mousemove --window $WID 406 218
+    leftclick
+}
+
+
+#
+# Main trading route
+#
+function runroute() {
+    refuel
+    buycomputers
+    markxeoner
+    quicksave
+    launch
+    pitchdown 1.5
+    fireinjectors 4
+    enterhyper
+    pitchdown 1.5
+    fireinjectors 20
+    jump
+    waitfor 15
+    pitchup 1.6
+
+    echo
+    echo "Maneuver to Xeoner then..."
+    pauseshell "Press [Enter] when you've docked"
+
+    sellcomputers
+    buyfurs
+    refuel
+    markxexedi
+    quicksave
+    launch
+    pitchdown 1.5
+    fireinjectors 4
+    enterhyper
+    pitchdown 1.5
+    fireinjectors 20
+    jump
+    waitfor 15
+    pitchup 1.6
+
+    echo
+    echo "Maneuver to Xexedi then..."
+    pauseshell "Press [Enter] when you've docked"
+
+    sellfurs
+}
+
+
+# Find the window and store the ID
+WID=$(xdotool search --name "Oolite v1.80" | head -1)
+
+echo "To start, you should be located on Xexedi station,"
+echo "have NOT refueled yet,"
+echo "with empty cargo holds,"
+echo
+echo "Use Ctrl-c to exit"
+echo
+
+pauseshell "Press [Enter] when you're ready"
+
+
+while true
+do
+    runroute
+done
+

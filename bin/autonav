@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+source bot-funcs.sh
+
+echo "bot-test"
+echo
+
+init_oolite_window
+
+pause_shell "Press [Enter] when you're ready"
+
+function navigate_to_station() {
+    is_station_in_range
+
+    while [ $? -eq 1 ]; do
+        wait_for 1
+        vert_align_with_station
+        wait_for 1
+        horz_align_with_station
+
+        is_station_in_range
+    done
+
+    dock
+}
+
+navigate_to_station
+

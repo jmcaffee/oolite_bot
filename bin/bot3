@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+
+source bot-funcs.sh
+
+#
+# Main trading route
+#
+function run_route() {
+    buy_computers
+    mark_xeoner
+    quick_save
+    launch
+    pitch_down 1.5
+    fire_injectors 4
+    enter_hyper
+    pitch_down 1.5
+    fire_injectors 40
+    jump
+    wait_for 15
+    pitch_up 1.6
+
+    echo "Navigating to Xeoner (Ag system)..."
+    navigate_to_station
+
+    sell_computers
+    buy_furs
+    refuel
+    mark_xexedi
+    quick_save
+    launch
+    pitch_down 1.5
+    fire_injectors 4
+    enter_hyper
+    pitch_down 1.5
+    fire_injectors 40
+    jump
+    wait_for 15
+    pitch_up 1.6
+
+    echo "Navigating to Xexedi (Industrial system)..."
+    navigate_to_station
+
+    sell_furs
+    refuel
+}
+
+
+echo "To start, you should be located on Xexedi station,"
+echo "with empty cargo holds,"
+echo "and have enough fuel to get to Xeoner."
+echo
+echo "Use Ctrl-c to exit"
+echo
+
+init_oolite_window
+
+pause_shell "Press [Enter] when you're ready"
+
+
+while true
+do
+    run_route
+done
+

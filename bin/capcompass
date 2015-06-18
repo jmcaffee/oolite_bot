@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+
+WID=$(xdotool search --name "Oolite v1.80" | head -1)
+xdotool windowactivate --sync $WID
+
+wh=34
+offsetX=1698
+offsetY=968
+
+function capturecompasspng() {
+    # Move to the Oolite window
+    xdotool mousemove --window $WID 0 0
+    # Get the mouse coordinates
+    eval $(xdotool getmouselocation --shell)
+    startx=$X
+    starty=$Y
+
+    # Capture a snapshot of the window
+    #xwd -root -silent | convert xwd:- -depth 8 -crop "478x579+31+31" txt:-
+    xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+1698+968" compass.png
+    #xwd -root -silent | convert xwd:- -depth 8 txt:-
+}
+
+function capturecompasstxt() {
+    # Move to the Oolite window
+    xdotool mousemove --window $WID 0 0
+    # Get the mouse coordinates
+    eval $(xdotool getmouselocation --shell)
+    startx=$X
+    starty=$Y
+
+    # Capture a snapshot of the window
+    #xwd -root -silent | convert xwd:- -depth 8 -crop "478x579+31+31" txt:-
+    xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+1698+968" txt:compass.txt
+    #xwd -root -silent | convert xwd:- -depth 8 txt:-
+}
+
+function capturecompass() {
+    # Move to the Oolite window
+    xdotool mousemove --window $WID 0 0
+    # Get the mouse coordinates
+    eval $(xdotool getmouselocation --shell)
+    startx=$X
+    starty=$Y
+
+    # Capture a snapshot of the window
+    xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+1698+968" txt:- | grep -m1 '#02F605'
+
+}
+
+function capturecompass2() {
+    # Move to the Oolite window
+    xdotool mousemove --window $WID 0 0
+    # Get the mouse coordinates
+    eval $(xdotool getmouselocation --shell)
+    startx=$X
+    starty=$Y
+    echo "origin: ${startx}x${starty}"
+    let offsetx=$startx+476
+    let offsety=$starty+576
+    echo "offset: ${offsetx}x${offsety}"
+
+    # Capture a snapshot of the window
+    #xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+1698+968" txt:- | grep -m1 '#02F605'
+    greenEnough='#[0-5][0-5]F[5-9|A-F][0-5][0-5]'
+    firstGreen=$(xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+${offsetx}+${offsety}" txt:- | grep -m1 $greenEnough)
+    #firstGreen=$(xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+${offsetx}+${offsety}" txt:- | grep -m1 '#[0-5][0-5]F[5-9|A-F][0-5][0-5]')
+    echo "data: $firstGreen"
+
+    tocoords $firstGreen
+    echo $curX "x" $curY
+    #xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+${offsetx}+${offsety}" compass.png
+    #xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+${offsetx}+${offsety}" compass.txt
+
+}
+
+function tocoords() {
+    eval $(echo $1 | awk 'BEGIN { FS="[,:]" }; { printf("curX=%d\ncurY=%d\n", $1, $2) }')
+}
+
+function showcoords() {
+    eval $(xdotool getmouselocation --shell)
+    let relx=X-startx
+    let rely=Y-starty
+    echo $relx $rely
+}
+
+
+capturecompass2
+#capturecompasstxt
+
+function grabfirstinstance() {
+    first=$(cat ./compass.txt | grep -m1 '#02F605')
+    eval $(echo $first | awk 'BEGIN { FS="[,:]" }; { printf("curX=%d\ncurY=%d\n", $1, $2) }')
+    echo $curX "x" $curY
+}
+
+function doit() {
+    grabfirstinstance
+}
+
+
