@@ -203,6 +203,84 @@ is_station_in_range() {
     return 1
 }
 
+## Cargo state functions
+
+#
+# Generate and store SHAs of the current 'in hold' cargo state for each item
+#
+get_current_cargo_state() {
+    foodSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $FOOD_Y | sha256sum)
+    textilesSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $TEXTILES_Y | sha256sum)
+    radioactivesSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $RADIOACTIVES_Y | sha256sum)
+    slavesSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $SLAVES_Y | sha256sum)
+    liquorSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $LIQUOR_Y | sha256sum)
+    luxuriesSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $LUXURIES_Y | sha256sum)
+    narcoticsSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $NARCOTICS_Y | sha256sum)
+    computersSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $COMPUTERS_Y | sha256sum)
+    machinerySHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $MACHINERY_Y | sha256sum)
+    alloysSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $ALLOYS_Y | sha256sum)
+    firearmsSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $FIREARMS_Y | sha256sum)
+    fursSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $FURS_Y | sha256sum)
+    mineralsSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $MINERALS_Y | sha256sum)
+    goldSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $GOLD_Y | sha256sum)
+    platinumSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $PLATINUM_Y | sha256sum)
+    gemstonesSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $GEMSTONES_Y | sha256sum)
+    alienitemsSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $ALIENITEMS_Y | sha256sum)
+}
+
+#
+# Store SHAs of 'in hold' state images for later comparison
+#
+store_empty_cargo_state() {
+    get_current_cargo_state
+
+    foodSHAEmpty=$foodSHA
+    textilesSHAEmpty=$textilesSHA
+    radioactivesSHAEmpty=$radioactivesSHA
+    slavesSHAEmpty=$slavesSHA
+    liquorSHAEmpty=$liquorSHA
+    luxuriesSHAEmpty=$luxuriesSHA
+    narcoticsSHAEmpty=$narcoticsSHA
+    computersSHAEmpty=$computersSHA
+    machinerySHAEmpty=$machinerySHA
+    alloysSHAEmpty=$alloysSHA
+    firearmsSHAEmpty=$firearmsSHA
+    fursSHAEmpty=$fursSHA
+    mineralsSHAEmpty=$mineralsSHA
+    goldSHAEmpty=$goldSHA
+    platinumSHAEmpty=$platinumSHA
+    gemstonesSHAEmpty=$gemstonesSHA
+    alienitemsSHAEmpty=$alienitemsSHA
+}
+
+#
+# Return 0 if cargo is in hold, 1 otherwise
+# Arg: name of item to test for (ie. "food")
+# Ex:
+#   if cargo_hold_contains "food"; then
+#       do true
+#   else
+#       do false
+#   fi
+#
+cargo_hold_contains() {
+    local item=$1
+    # Store the NAME of a variable containing the empty item SHA
+    local emptyItemVar="${item}SHAEmpty"
+    # Store the NAME of a variable containing the current item SHA
+    local currItemVar="${item}SHA"
+    # Get the SHA from the value of the variable named emptyItemVar
+    local emptyItem=${!emptyItemVar}
+    # Get the SHA from the value of the variable named currItemVar
+    local currItem=${!currItemVar}
+
+    if [[ $emptyItem == $currItem ]]; then
+        return 1 # false
+    else
+        return 0 # true
+    fi
+}
+
 ## Game controls
 
 pitch_up() {
