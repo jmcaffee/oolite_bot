@@ -9,11 +9,17 @@ init_oolite_window
 
 pause_shell "Press [Enter] when you're ready"
 
+# Width and height of 'in hold' market items
 IN_HOLD_W=25
 IN_HOLD_H=18
 
+# Origin of first item (food) on market screen
 ITEM_X=551
 ITEM_Y=130
+
+# Origin of items on market screen. Because the height is actually
+# somewhere between 18 and 19 pixels, the starting point of some
+# items is incremented by 1 occasionally.
 FOOD_Y=$ITEM_Y
 ((ITEM_Y += IN_HOLD_H))
 TEXTILES_Y=$ITEM_Y
