@@ -54,46 +54,27 @@ GEMSTONES_Y=$ITEM_Y
 ((ITEM_Y += IN_HOLD_H + 1))
 ALIENITEMS_Y=$ITEM_Y
 
-capture_cargo_in_hold() {
-    FOOD_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $FOOD_Y)
-    TEXTILES_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $TEXTILES_Y)
-    RADIOACTIVES_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $RADIOACTIVES_Y)
-    SLAVES_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $SLAVES_Y)
-    LIQUOR_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $LIQUOR_Y)
-    LUXURIES_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $LUXURIES_Y)
-
-
-    NARCOTICS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $NARCOTICS_Y)
-    COMPUTERS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $COMPUTERS_Y)
-    MACHINERY_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $MACHINERY_Y)
-    ALLOYS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $ALLOYS_Y)
-    FIREARMS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $FIREARMS_Y)
-    FURS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $FURS_Y)
-    MINERALS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $MINERALS_Y)
-    GOLD_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $GOLD_Y)
-    PLATINUM_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $PLATINUM_Y)
-    GEMSTONES_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $GEMSTONES_Y)
-    ALIENITEMS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $ALIENITEMS_Y)
-}
-
-capture_cargo_in_hold2() {
-    FOOD_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $FOOD_Y | sha256sum)
-    TEXTILES_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $TEXTILES_Y | sha256sum)
-    RADIOACTIVES_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $RADIOACTIVES_Y | sha256sum)
-    SLAVES_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $SLAVES_Y | sha256sum)
-    LIQUOR_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $LIQUOR_Y | sha256sum)
-    LUXURIES_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $LUXURIES_Y | sha256sum)
-    NARCOTICS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $NARCOTICS_Y | sha256sum)
-    COMPUTERS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $COMPUTERS_Y | sha256sum)
-    MACHINERY_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $MACHINERY_Y | sha256sum)
-    ALLOYS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $ALLOYS_Y | sha256sum)
-    FIREARMS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $FIREARMS_Y | sha256sum)
-    FURS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $FURS_Y | sha256sum)
-    MINERALS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $MINERALS_Y | sha256sum)
-    GOLD_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $GOLD_Y | sha256sum)
-    PLATINUM_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $PLATINUM_Y | sha256sum)
-    GEMSTONES_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $GEMSTONES_Y | sha256sum)
-    ALIENITEMS_IMG=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $ALIENITEMS_Y | sha256sum)
+#
+# Generate and store SHAs of the current 'in hold' cargo state for each item
+#
+get_current_cargo_state() {
+    foodSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $FOOD_Y | sha256sum)
+    textilesSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $TEXTILES_Y | sha256sum)
+    radioactivesSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $RADIOACTIVES_Y | sha256sum)
+    slavesSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $SLAVES_Y | sha256sum)
+    liquorSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $LIQUOR_Y | sha256sum)
+    luxuriesSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $LUXURIES_Y | sha256sum)
+    narcoticsSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $NARCOTICS_Y | sha256sum)
+    computersSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $COMPUTERS_Y | sha256sum)
+    machinerySHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $MACHINERY_Y | sha256sum)
+    alloysSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $ALLOYS_Y | sha256sum)
+    firearmsSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $FIREARMS_Y | sha256sum)
+    fursSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $FURS_Y | sha256sum)
+    mineralsSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $MINERALS_Y | sha256sum)
+    goldSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $GOLD_Y | sha256sum)
+    platinumSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $PLATINUM_Y | sha256sum)
+    gemstonesSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $GEMSTONES_Y | sha256sum)
+    alienitemsSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $ALIENITEMS_Y | sha256sum)
 }
 
 
@@ -124,48 +105,76 @@ cap_to_img() {
     write_snapshot $IN_HOLD_W $IN_HOLD_H $originX $originY $fname
 }
 
-store_cargo_images() {
-    ORIG_FOOD_IMG=$FOOD_IMG
-    ORIG_TEXTILES_IMG=$TEXTILES_IMG
-    ORIG_RADIOACTIVES_IMG=$RADIOACTIVES_IMG
-    ORIG_SLAVES_IMG=$SLAVES_IMG
-    ORIG_LIQUOR_IMG=$LIQUOR_IMG
-    ORIG_LUXURIES_IMG=$LUXURIES_IMG
-    ORIG_NARCOTICS_IMG=$NARCOTICS_IMG
-    ORIG_COMPUTERS_IMG=$COMPUTERS_IMG
-    ORIG_MACHINERY_IMG=$MACHINERY_IMG
-    ORIG_ALLOYS_IMG=$ALLOYS_IMG
-    ORIG_FIREARMS_IMG=$FIREARMS_IMG
-    ORIG_FURS_IMG=$FURS_IMG
-    ORIG_MINERALS_IMG=$MINERALS_IMG
-    ORIG_GOLD_IMG=$GOLD_IMG
-    ORIG_PLATINUM_IMG=$PLATINUM_IMG
-    ORIG_GEMSTONES_IMG=$GEMSTONES_IMG
-    ORIG_ALIENITEMS_IMG=$ALIENITEMS_IMG
+#
+# Store SHAs of 'in hold' state images for later comparison
+#
+store_empty_cargo_state() {
+    foodSHAEmpty=$foodSHA
+    textilesSHAEmpty=$textilesSHA
+    radioactivesSHAEmpty=$radioactivesSHA
+    slavesSHAEmpty=$slavesSHA
+    liquorSHAEmpty=$liquorSHA
+    luxuriesSHAEmpty=$luxuriesSHA
+    narcoticsSHAEmpty=$narcoticsSHA
+    computersSHAEmpty=$computersSHA
+    machinerySHAEmpty=$machinerySHA
+    alloysSHAEmpty=$alloysSHA
+    firearmsSHAEmpty=$firearmsSHA
+    fursSHAEmpty=$fursSHA
+    mineralsSHAEmpty=$mineralsSHA
+    goldSHAEmpty=$goldSHA
+    platinumSHAEmpty=$platinumSHA
+    gemstonesSHAEmpty=$gemstonesSHA
+    alienitemsSHAEmpty=$alienitemsSHA
 }
 
 food_in_hold() {
-    if [[ $ORIG_FOOD_IMG == $FOOD_IMG ]]; then
-        echo "No change to food"
-        echo $ORIG_FOOD_IMG
-        echo $FOOD_IMG
+    if cargo_hold_contains "food"; then
+        echo "There's food in the hold"
     else
-        echo "Food is different"
-        echo $ORIG_FOOD_IMG
-        echo $FOOD_IMG
+        echo "No food in hold"
+    fi
+
+    echo $foodSHAEmpty
+    echo $foodSHA
+}
+
+#
+# Return 0 if cargo is in hold, 1 otherwise
+# Arg: name of item to test for (ie. "food")
+# Ex:
+#   if cargo_hold_contains "food"; then
+#       do true
+#   else
+#       do false
+#   fi
+#
+cargo_hold_contains() {
+    local item=$1
+    # Store the NAME of a variable containing the empty item SHA
+    local emptyItemVar="${item}SHAEmpty"
+    # Store the NAME of a variable containing the current item SHA
+    local currItemVar="${item}SHA"
+    # Get the SHA from the value of the variable named emptyItemVar
+    local emptyItem=${!emptyItemVar}
+    # Get the SHA from the value of the variable named currItemVar
+    local currItem=${!currItemVar}
+
+    if [[ $emptyItem == $currItem ]]; then
+        return 1
+    else
+        return 0
     fi
 }
 
 doit() {
-    pause_shell "Enter after updating food cargo (start)"
-    capture_cargo_in_hold2
-    cap_to_img $ITEM_X $RADIOACTIVES_Y radioactives.png
-    store_cargo_images
+    pause_shell "Enter after clearing out hold"
+    get_current_cargo_state
+    store_empty_cargo_state
 
-    pause_shell "Enter after updating food cargo (final)"
+    pause_shell "Enter after updating food cargo"
 
-    capture_cargo_in_hold2
-    cap_to_img $ITEM_X $RADIOACTIVES_Y radioactives2.png
+    get_current_cargo_state
     food_in_hold
 }
 
@@ -174,7 +183,8 @@ doit() {
 #
 dump_market_images() {
     local saveTo=$1
-    local delay=0.5
+    # Delay to give the image write time to complete
+    local delay=1.0
 
     goto_status
     goto_market
@@ -230,5 +240,6 @@ dump_market_images() {
     cap_to_img $ITEM_X $ALIENITEMS_Y ${saveTo}alienitems.png
 }
 
-dump_market_images $1
+#dump_market_images $1
+doit
 
