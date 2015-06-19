@@ -2,7 +2,9 @@
 
 source bot-funcs.sh
 
-echo "bot-test"
+echo "autonav"
+echo
+echo "Automatically navigate to the nearest planet/station and dock"
 echo
 
 init_oolite_window
@@ -20,9 +22,11 @@ function navigate_to_station() {
 
         is_station_in_range
     done
-
-    dock
 }
 
 navigate_to_station
+dock
+
+echo "Thank you for flying AutoNav spacelines"
+echo
 
