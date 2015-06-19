@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
+#
 ## Global Settings ##
+#
 
 # Oolite window size
 WIN_WIDTH=727
@@ -33,6 +35,10 @@ IND_PLANET_Y=325
 # Keystroke delay in ms
 KEYDELAY=80
 
+#
+## Functions ##
+#
+
 # Find and initialize the Oolite window
 init_oolite_window() {
     find_oolite_window
@@ -50,19 +56,40 @@ init_oolite_window() {
     WIN_NAME=$(xdotool getwindowname $WID)
 }
 
+# Find the Oolite window and store the ID
+find_oolite_window() {
+    WID=$(xdotool search --name "Oolite v1.80" | head -1)
+}
+
+focus_oolite_window() {
+    xdotool windowactivate --sync $WID
+}
+
 pause_shell() {
     read -p "$*"
-    xdotool windowactivate --sync $WID
+    focus_oolite_window
 }
 
 wait_for() {
     xdotool sleep $1
 }
 
+## Mouse and keyboard I/O
+
 left_click() {
     xdotool mousedown 1
     wait_for 0.5
     xdotool mouseup 1
+}
+
+store_mouse_location() {
+    eval $(xdotool getmouselocation --shell)
+    mouseX=$X
+    mouseY=$Y
+}
+
+restore_mouse_location() {
+    xdotool mousemove $mouseX $mouseY
 }
 
 send_key() {
@@ -74,6 +101,64 @@ key_press() {
     wait_for $2
     xdotool keyup --delay $KEYDELAY $1
 }
+
+## Screen capture functions
+
+capture_snapshot() {
+    # Store the args in named vars
+    local width=$1
+    local height=$2
+    local originX=$3
+    local originY=$4
+
+    local cropStr="${width}x${height}+${originX}+${originY}"
+
+    # Capture a snapshot of the window
+    xwd -name "$WIN_NAME" -silent | convert xwd:- -depth 8 -crop $cropStr txt:-
+}
+
+capture_compass() {
+    capture_snapshot $COMPASS_WIDTH $COMPASS_HEIGHT $COMPASS_X $COMPASS_Y
+}
+
+find_pixel() {
+    capture_compass | grep -m1 $1
+}
+
+to_coords() {
+    eval $(echo $1 | awk 'BEGIN { FS="[,:]" }; { printf("curX=%d\ncurY=%d\n", $1, $2) }')
+}
+
+set_crosshair_coords() {
+    local greenEnough='#[0-5][0-5]F[5-9|A-F][0-5][0-5]'
+    local line=$(find_pixel $greenEnough)
+    to_coords $line
+}
+
+capture_station_indicator() {
+    capture_snapshot $STATION_IND_WIDTH $STATION_IND_HEIGHT $STATION_IND_X $STATION_IND_Y
+}
+
+find_station_pixel() {
+    capture_station_indicator | grep -m1 $1
+}
+
+set_station_ind_coords() {
+    local greenEnough='#[[:digit:]][[:digit:]][6-9|A-F][0-9|A-F][[:digit:]][[:digit:]]'
+    local line=$(find_station_pixel $greenEnough)
+    to_coords $line
+}
+
+is_station_in_range() {
+    set_station_ind_coords
+
+    if [ $curX -eq 7 ] && [ $curY -eq 2 ]; then
+        return 0
+    fi
+    return 1
+}
+
+## Game controls
 
 pitch_up() {
     key_press Down $1
@@ -124,21 +209,6 @@ enter_hyper() {
     wait_for 20
 }
 
-goto_status() {
-    send_key 5
-}
-
-goto_market() {
-    send_key 8
-}
-
-goto_system_nav() {
-    # Make sure we don't go to the galactic chart by
-    # going to the market screen first.
-    goto_market
-    send_key 6
-}
-
 quick_save() {
     send_key 2
     send_key Return
@@ -148,6 +218,25 @@ refuel() {
     send_key 3
     send_key Return
 }
+
+## Game screens
+
+goto_status() {
+    send_key 5
+}
+
+goto_system_nav() {
+    # Make sure we don't go to the galactic chart by
+    # going to the market screen first.
+    goto_market
+    send_key 6
+}
+
+goto_market() {
+    send_key 8
+}
+
+## Market actions
 
 buy_furs() {
     goto_status
@@ -171,15 +260,7 @@ sell_computers() {
     buy_computers
 }
 
-store_mouse_location() {
-    eval $(xdotool getmouselocation --shell)
-    mouseX=$X
-    mouseY=$Y
-}
-
-restore_mouse_location() {
-    xdotool mousemove $mouseX $mouseY
-}
+## Navigation actions
 
 mark_xexedi() {
     # Save the current mouse location
@@ -205,45 +286,7 @@ mark_xeoner() {
     restore_mouse_location
 }
 
-# Find the Oolite window and store the ID
-find_oolite_window() {
-    WID=$(xdotool search --name "Oolite v1.80" | head -1)
-}
-
-#
-# Screen capture functions
-#
-
-capture_snapshot() {
-    # Store the args in named vars
-    local width=$1
-    local height=$2
-    local originX=$3
-    local originY=$4
-
-    local cropStr="${width}x${height}+${originX}+${originY}"
-
-    # Capture a snapshot of the window
-    xwd -name "$WIN_NAME" -silent | convert xwd:- -depth 8 -crop $cropStr txt:-
-}
-
-capture_compass() {
-    capture_snapshot $COMPASS_WIDTH $COMPASS_HEIGHT $COMPASS_X $COMPASS_Y
-}
-
-find_pixel() {
-    capture_compass | grep -m1 $1
-}
-
-to_coords() {
-    eval $(echo $1 | awk 'BEGIN { FS="[,:]" }; { printf("curX=%d\ncurY=%d\n", $1, $2) }')
-}
-
-set_crosshair_coords() {
-    local greenEnough='#[0-5][0-5]F[5-9|A-F][0-5][0-5]'
-    local line=$(find_pixel $greenEnough)
-    to_coords $line
-}
+## Automated flight
 
 vert_align_with_station() {
     local delay=.1
@@ -293,29 +336,6 @@ horz_align_with_station() {
             set_crosshair_coords
         done
     fi
-}
-
-capture_station_indicator() {
-    capture_snapshot $STATION_IND_WIDTH $STATION_IND_HEIGHT $STATION_IND_X $STATION_IND_Y
-}
-
-find_station_pixel() {
-    capture_station_indicator | grep -m1 $1
-}
-
-set_station_ind_coords() {
-    local greenEnough='#[[:digit:]][[:digit:]][6-9|A-F][0-9|A-F][[:digit:]][[:digit:]]'
-    local line=$(find_station_pixel $greenEnough)
-    to_coords $line
-}
-
-is_station_in_range() {
-    set_station_ind_coords
-
-    if [ $curX -eq 7 ] && [ $curY -eq 2 ]; then
-        return 0
-    fi
-    return 1
 }
 
 navigate_to_station() {
