@@ -14,8 +14,8 @@ function usage(){
 }
 
 # Check for proper number of args.
-expected_args=5
-if [ $# -ne $expected_args ]
+expectedArgs=5
+if [ $# -ne $expectedArgs ]
 then
     usage
     exit 1
@@ -24,20 +24,20 @@ fi
 # Store the args in named vars
 width=$1
 height=$2
-origin_x=$3
-origin_y=$4
+originX=$3
+originY=$4
 output=$5
 
 # Build the cropping string
-crop_str="${width}x${height}+${origin_x}+${origin_y}"
+cropStr="${width}x${height}+${originX}+${originY}"
 
-echo "Dumping $crop_str to $output"
+echo "Dumping $cropStr to $output"
 echo
 
 init_oolite_window
 
 # Capture a snapshot of the window
-xwd -name "$WIN_NAME" -silent | convert xwd:- -depth 8 -crop $crop_str $output
+xwd -name "$WIN_NAME" -silent | convert xwd:- -depth 8 -crop $cropStr $output
 
 exit 0
 
