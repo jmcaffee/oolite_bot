@@ -35,6 +35,51 @@ IND_PLANET_Y=325
 # Keystroke delay in ms
 KEYDELAY=80
 
+# Width and height of 'in hold' market items
+IN_HOLD_W=25
+IN_HOLD_H=18
+
+# Origin of first item (food) on market screen
+ITEM_X=551
+ITEM_Y=130
+
+# Origin of items on market screen. Because the height is actually
+# somewhere between 18 and 19 pixels, the starting point of some
+# items is incremented by 1 occasionally.
+FOOD_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H))
+TEXTILES_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H))
+RADIOACTIVES_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H))
+SLAVES_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H))
+LIQUOR_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H + 1))
+LUXURIES_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H))
+NARCOTICS_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H))
+COMPUTERS_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H))
+MACHINERY_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H))
+ALLOYS_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H))
+FIREARMS_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H + 1))
+FURS_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H))
+MINERALS_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H))
+GOLD_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H))
+PLATINUM_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H))
+GEMSTONES_Y=$ITEM_Y
+((ITEM_Y += IN_HOLD_H + 1))
+ALIENITEMS_Y=$ITEM_Y
+
 #
 ## Functions ##
 #
