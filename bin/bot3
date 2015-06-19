@@ -11,7 +11,7 @@ function run_route() {
     quick_save
     launch
     pitch_down 1.5
-    fire_injectors 4
+    fire_injectors 8
     enter_hyper
     pitch_down 1.5
     fire_injectors 40
@@ -29,7 +29,7 @@ function run_route() {
     quick_save
     launch
     pitch_down 1.5
-    fire_injectors 4
+    fire_injectors 8
     enter_hyper
     pitch_down 1.5
     fire_injectors 40
