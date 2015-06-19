@@ -109,6 +109,8 @@ cap_to_img() {
 # Store SHAs of 'in hold' state images for later comparison
 #
 store_empty_cargo_state() {
+    get_current_cargo_state
+
     foodSHAEmpty=$foodSHA
     textilesSHAEmpty=$textilesSHA
     radioactivesSHAEmpty=$radioactivesSHA
@@ -161,15 +163,14 @@ cargo_hold_contains() {
     local currItem=${!currItemVar}
 
     if [[ $emptyItem == $currItem ]]; then
-        return 1
+        return 1 # false
     else
-        return 0
+        return 0 # true
     fi
 }
 
 doit() {
     pause_shell "Enter after clearing out hold"
-    get_current_cargo_state
     store_empty_cargo_state
 
     pause_shell "Enter after updating food cargo"
