@@ -2,14 +2,124 @@
 
 source bot-funcs.sh
 
+usage() {
+    echo "Usage: $0 [options]"
+    echo
+    echo "  Options:"
+    echo "    -h, --help         - this help"
+    echo "    -i, --interactive  - ask before starting each route cycle"
+    echo "    -q, --quiet        - don't display status updates"
+}
+
+interactive=false
+quiet=false
+
+while (( "$#" )); do
+    if [[ "$1" == "-i" ]]; then
+        interactive=true
+        shift
+    fi
+
+    if [[ "$1" == "--interactive" ]]; then
+        interactive=true
+        shift
+    fi
+
+    if [[ "$1" == "-h" ]]; then
+        usage
+        exit 0
+    fi
+
+    if [[ "$1" == "--help" ]]; then
+        usage
+        exit 0
+    fi
+
+    if [[ "$1" == "-q" ]]; then
+        quiet=true
+        shift
+    fi
+
+    if [[ "$1" == "--quiet" ]]; then
+        quiet=true
+        shift
+    fi
+done
+
+get_current_planet() {
+    PS3="Select your current location: "
+    options=($AG_PLANET_NAME $IND_PLANET_NAME "Quit")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            $AG_PLANET_NAME)
+                currPlanet="ag"
+                currPlanetName=$AG_PLANET_NAME
+                break
+                ;;
+            $IND_PLANET_NAME)
+                currPlanet="ind"
+                currPlanetName=$IND_PLANET_NAME
+                break
+                ;;
+            "Quit")
+                currPlanet="quit"
+                break
+                ;;
+            *)
+                echo "Invalid choice"
+                ;;
+        esac
+    done
+
+    if [[ "$currPlanet" == "quit" ]]; then
+        echo "Goodbye."
+        exit 0
+    fi
+}
+
+set_next_planet() {
+    if [[ "$currPlanet" == "ag" ]]; then
+        nextPlanet="ind"
+        nextPlanetName=$IND_PLANET_NAME
+    else
+        nextPlanet="ag"
+        nextPlanetName=$AG_PLANET_NAME
+    fi
+}
+
+update_current_planet() {
+    currPlanet=$nextPlanet
+    if [[ "$currPlanet" == "ag" ]]; then
+        currPlanetName=$AG_PLANET_NAME
+    else
+        currPlanetName=$IND_PLANET_NAME
+    fi
+
+    set_next_planet
+}
+
+display_status() {
+    if [[ "$quiet" == false ]]; then
+        echo $1
+    fi
+}
+
 #
 # Main trading route
 #
 function run_route() {
-    buy_computers
-    mark_xeoner
+    buy_cargo $nextPlanet
+    mark_next_planet $nextPlanet
     quick_save
+
+    if [[ "$interactive" == "true" ]]; then
+        echo "Ready to launch for $nextPlanetName"
+        pause_shell "Press [Enter] when you're ready"
+    fi
+
     launch
+    display_status "Beginning route to $nextPlanetName"
     pitch_down 1.5
     fire_injectors 8
     enter_hyper
@@ -19,42 +129,80 @@ function run_route() {
     wait_for 15
     pitch_up 1.6
 
-    echo "Navigating to Xeoner (Ag system)..."
+    display_status "Navigating to ${nextPlanetName}..."
     navigate_to_station
 
-    sell_computers
-    buy_furs
+    update_current_planet
+    display_status "Docked at $currPlanetName"
+    sell_cargo $currPlanet
     refuel
-    mark_xexedi
-    quick_save
-    launch
-    pitch_down 1.5
-    fire_injectors 8
-    enter_hyper
-    pitch_down 1.5
-    fire_injectors 40
-    jump
-    wait_for 15
-    pitch_up 1.6
+}
 
-    echo "Navigating to Xexedi (Industrial system)..."
-    navigate_to_station
+buy_cargo() {
+    if [[ "$1" == "ag" ]]; then
+        buy_computers
+        buy_luxuries
+        buy_machinery
+        buy_alloys
+    else
+        buy_furs
+        buy_liquor
+        buy_radioactives
+        buy_platinum
+        buy_textiles
+        buy_minerals
+        buy_food
+    fi
+}
 
-    sell_furs
-    refuel
+sell_cargo() {
+    get_current_cargo_state
+
+    if [[ "$1" == "ag" ]]; then
+        sell_computers
+        sell_luxuries
+        sell_machinery
+        sell_alloys
+    else
+        sell_furs
+        sell_liquor
+        sell_radioactives
+        sell_platinum
+        sell_textiles
+        sell_minerals
+        sell_food
+    fi
+}
+
+mark_next_planet() {
+    if [[ "$1" == "ag" ]]; then
+        mark_ag
+    else
+        mark_ind
+    fi
 }
 
 
 init_oolite_window
 
-echo "To start, you should be located on Xexedi station,"
-echo "with empty cargo holds,"
-echo "and have enough fuel to get to Xeoner."
+echo
+echo "Oolite Merchant Bot"
+echo
+
+get_current_planet
+set_next_planet
+
+echo
+echo "Before starting, you should have empty cargo holds,"
+echo "and have enough fuel to get to $nextPlanetName"
 echo
 echo "Use Ctrl-c to exit"
 echo
 
 pause_shell "Press [Enter] when you're ready"
+
+# Before we start,
+store_empty_cargo_state
 
 
 while true

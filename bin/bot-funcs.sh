@@ -24,11 +24,13 @@ STATION_IND_HEIGHT=32
 STATION_IND_X=198
 STATION_IND_Y=632
 
-# Ag planet X/Y
+# Ag planet details
+AG_PLANET_NAME=Xeoner
 AG_PLANET_X=422
 AG_PLANET_Y=242
 
-# Industrial planet X/Y
+# Industrial planet details
+IND_PLANET_NAME=Xexedi
 IND_PLANET_X=303
 IND_PLANET_Y=325
 
@@ -209,6 +211,9 @@ is_station_in_range() {
 # Generate and store SHAs of the current 'in hold' cargo state for each item
 #
 get_current_cargo_state() {
+    goto_status
+    goto_market
+
     foodSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $FOOD_Y | sha256sum)
     textilesSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $TEXTILES_Y | sha256sum)
     radioactivesSHA=$(capture_snapshot $IN_HOLD_W $IN_HOLD_H $ITEM_X $RADIOACTIVES_Y | sha256sum)
@@ -361,15 +366,68 @@ goto_market() {
 
 ## Market actions
 
-buy_furs() {
+buy_food() {
     goto_status
     goto_market
-    send_key Down Down Down Down Down Down Down Down Down Down Down
     send_key Return
 }
 
-sell_furs() {
-    buy_furs
+sell_food() {
+    if cargo_hold_contains "food"; then
+        buy_food
+    fi
+}
+
+buy_textiles() {
+    goto_status
+    goto_market
+    send_key Down
+    send_key Return
+}
+
+sell_textiles() {
+    if cargo_hold_contains "textiles"; then
+        buy_textiles
+    fi
+}
+
+buy_radioactives() {
+    goto_status
+    goto_market
+    send_key Down Down
+    send_key Return
+}
+
+sell_radioactives() {
+    if cargo_hold_contains "radioactives"; then
+        buy_radioactives
+    fi
+}
+
+buy_liquor() {
+    goto_status
+    goto_market
+    send_key Down Down Down Down
+    send_key Return
+}
+
+sell_liquor() {
+    if cargo_hold_contains "liquor"; then
+        buy_liquor
+    fi
+}
+
+buy_luxuries() {
+    goto_status
+    goto_market
+    send_key Down Down Down Down Down
+    send_key Return
+}
+
+sell_luxuries() {
+    if cargo_hold_contains "luxuries"; then
+        buy_luxuries
+    fi
 }
 
 buy_computers() {
@@ -380,12 +438,80 @@ buy_computers() {
 }
 
 sell_computers() {
-    buy_computers
+    if cargo_hold_contains "computers"; then
+        buy_computers
+    fi
 }
+
+buy_machinery() {
+    goto_status
+    goto_market
+    send_key Down Down Down Down Down Down Down Down
+    send_key Return
+}
+
+sell_machinery() {
+    if cargo_hold_contains "machinery"; then
+        buy_machinery
+    fi
+}
+
+buy_alloys() {
+    goto_status
+    goto_market
+    send_key Down Down Down Down Down Down Down Down Down
+    send_key Return
+}
+
+sell_alloys() {
+    if cargo_hold_contains "alloys"; then
+        buy_alloys
+    fi
+}
+
+buy_furs() {
+    goto_status
+    goto_market
+    send_key Down Down Down Down Down Down Down Down Down Down Down
+    send_key Return
+}
+
+sell_furs() {
+    if cargo_hold_contains "furs"; then
+        buy_furs
+    fi
+}
+
+buy_minerals() {
+    goto_status
+    goto_market
+    send_key Down Down Down Down Down Down Down Down Down Down Down Down
+    send_key Return
+}
+
+sell_minerals() {
+    if cargo_hold_contains "minerals"; then
+        buy_minerals
+    fi
+}
+
+buy_platinum() {
+    goto_status
+    goto_market
+    send_key Down Down Down Down Down Down Down Down Down Down Down Down Down Down
+    send_key Return
+}
+
+sell_platinum() {
+    if cargo_hold_contains "platinum"; then
+        buy_platinum
+    fi
+}
+
 
 ## Navigation actions
 
-mark_xexedi() {
+mark_ind() {
     # Save the current mouse location
     store_mouse_location
 
@@ -397,7 +523,7 @@ mark_xexedi() {
     restore_mouse_location
 }
 
-mark_xeoner() {
+mark_ag() {
     # Save the current mouse location
     store_mouse_location
 
