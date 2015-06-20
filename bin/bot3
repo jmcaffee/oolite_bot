@@ -154,68 +154,6 @@ function run_route() {
     refuel
 }
 
-#
-# Buy cargo appropriate for the destination planet
-#
-# Args:
-#   planet type: [ag | ind]
-#
-buy_cargo() {
-    if [[ "$1" == "ag" ]]; then
-        buy_computers
-        buy_luxuries
-        buy_machinery
-        buy_alloys
-    else
-        buy_furs
-        buy_liquor
-        buy_radioactives
-        buy_platinum
-        buy_textiles
-        buy_minerals
-        buy_food
-    fi
-}
-
-#
-# Sell cargo appropriate for the current planet
-#
-# Args:
-#   planet type: [ag | ind]
-#
-sell_cargo() {
-    get_current_cargo_state
-
-    if [[ "$1" == "ag" ]]; then
-        sell_computers
-        sell_luxuries
-        sell_machinery
-        sell_alloys
-    else
-        sell_furs
-        sell_liquor
-        sell_radioactives
-        sell_platinum
-        sell_textiles
-        sell_minerals
-        sell_food
-    fi
-}
-
-#
-# Mark the next planet on the nav chart (for hyperspace)
-#
-# Args:
-#   planet type: [ag | ind]
-#
-mark_next_planet() {
-    if [[ "$1" == "ag" ]]; then
-        mark_ag
-    else
-        mark_ind
-    fi
-}
-
 # Find and initialize our game window
 init_oolite_window
 

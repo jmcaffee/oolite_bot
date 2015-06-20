@@ -260,7 +260,10 @@ store_empty_cargo_state() {
 
 #
 # Return 0 if cargo is in hold, 1 otherwise
-# Arg: name of item to test for (ie. "food")
+#
+# Args:
+#   name of item to test for (ie. "food")
+#
 # Ex:
 #   if cargo_hold_contains "food"; then
 #       do true
@@ -270,13 +273,11 @@ store_empty_cargo_state() {
 #
 cargo_hold_contains() {
     local item=$1
-    # Store the NAME of a variable containing the empty item SHA
+    # Store the names of the vars containing the empty item and current item SHAs
     local emptyItemVar="${item}SHAEmpty"
-    # Store the NAME of a variable containing the current item SHA
     local currItemVar="${item}SHA"
-    # Get the SHA from the value of the variable named emptyItemVar
+    # Get the SHAs from the vars named in emptyItemVar and currItemVar
     local emptyItem=${!emptyItemVar}
-    # Get the SHA from the value of the variable named currItemVar
     local currItem=${!currItemVar}
 
     if [[ $emptyItem == $currItem ]]; then
@@ -508,6 +509,54 @@ sell_platinum() {
     fi
 }
 
+#
+# Buy cargo appropriate for the destination planet
+#
+# Args:
+#   planet type: [ag | ind]
+#
+buy_cargo() {
+    if [[ "$1" == "ag" ]]; then
+        buy_computers
+        buy_luxuries
+        buy_machinery
+        buy_alloys
+    else
+        buy_furs
+        buy_liquor
+        buy_radioactives
+        buy_platinum
+        buy_textiles
+        buy_minerals
+        buy_food
+    fi
+}
+
+#
+# Sell cargo appropriate for the current planet
+#
+# Args:
+#   planet type: [ag | ind]
+#
+sell_cargo() {
+    get_current_cargo_state
+
+    if [[ "$1" == "ag" ]]; then
+        sell_computers
+        sell_luxuries
+        sell_machinery
+        sell_alloys
+    else
+        sell_furs
+        sell_liquor
+        sell_radioactives
+        sell_platinum
+        sell_textiles
+        sell_minerals
+        sell_food
+    fi
+}
+
 
 ## Navigation actions
 
@@ -535,14 +584,27 @@ mark_ag() {
     restore_mouse_location
 }
 
+#
+# Mark the next planet on the nav chart (for hyperspace)
+#
+# Args:
+#   planet type: [ag | ind]
+#
+mark_next_planet() {
+    if [[ "$1" == "ag" ]]; then
+        mark_ag
+    else
+        mark_ind
+    fi
+}
+
 ## Automated flight
 
 vert_align_with_station() {
     local delay=.1
 
     # Don't bother with alignment if station is in range
-    is_station_in_range
-    if [ $? -eq 0 ]; then
+    if is_station_in_range; then
         return
     fi
 
@@ -566,8 +628,7 @@ horz_align_with_station() {
     local delay=.1
 
     # Don't bother with alignment if station is in range
-    is_station_in_range
-    if [ $? -eq 0 ]; then
+    if is_station_in_range; then
         return
     fi
 
@@ -588,15 +649,11 @@ horz_align_with_station() {
 }
 
 navigate_to_station() {
-    is_station_in_range
-
-    while [ $? -eq 1 ]; do
+    while ! is_station_in_range; do
         wait_for 1
         vert_align_with_station
         wait_for 1
         horz_align_with_station
-
-        is_station_in_range
     done
 
     dock
