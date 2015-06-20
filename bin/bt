@@ -241,6 +241,39 @@ dump_market_images() {
     cap_to_img $ITEM_X $ALIENITEMS_Y ${saveTo}alienitems.png
 }
 
+current_location_menu() {
+    PS3="Select your current location: "
+    options=($AG_PLANET_NAME $IND_PLANET_NAME "Quit")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            $AG_PLANET_NAME)
+                currPlanet="ag"
+                break
+                ;;
+            $IND_PLANET_NAME)
+                currPlanet="ind"
+                break
+                ;;
+            "Quit")
+                currPlanet="quit"
+                break
+                ;;
+            *)
+                echo "Invalid choice"
+                ;;
+        esac
+    done
+
+    if [[ "$currPlanet" == "quit" ]]; then
+        echo "Goodbye."
+        exit 0
+    fi
+}
+
 #dump_market_images $1
-doit
+#doit
+current_location_menu
+
+echo "You selected $currPlanet"
 
