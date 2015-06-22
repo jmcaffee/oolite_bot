@@ -1,102 +1,111 @@
 #!/usr/bin/env bash
+##!/bin/bash -vx
 
-WID=$(xdotool search --name "Oolite v1.80" | head -1)
-xdotool windowactivate --sync $WID
+source bot-util-funcs.sh
 
-wh=34
-offsetX=1698
-offsetY=968
-
-function capturecompasspng() {
-    # Move to the Oolite window
-    xdotool mousemove --window $WID 0 0
-    # Get the mouse coordinates
-    eval $(xdotool getmouselocation --shell)
-    startx=$X
-    starty=$Y
-
-    # Capture a snapshot of the window
-    #xwd -root -silent | convert xwd:- -depth 8 -crop "478x579+31+31" txt:-
-    xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+1698+968" compass.png
-    #xwd -root -silent | convert xwd:- -depth 8 txt:-
+usage() {
+    echo "Usage: ${0##*/} [options] [ W H X Y ]"
+    echo
+    echo "  Options:"
+    echo "    -h, --help        - this help"
+    echo "    -f, --file {file} - file to write data to"
+    echo
+    echo "  Summary:"
+    echo "    Dump the compass data to a file or display the coordinates of"
+    echo "    the compass direction (if no file output is indicated)"
+    echo
+    echo "    If W H X Y args are provided, the image captured will use them."
+    echo "    If location args are not provided, the default values will be used."
+    echo
+    echo "    If writing to a file, the format of the output file is determined"
+    echo "    by the file extension."
+    echo "    Available extensions are .txt, .png, .jpg"
+    echo
 }
 
-function capturecompasstxt() {
-    # Move to the Oolite window
-    xdotool mousemove --window $WID 0 0
-    # Get the mouse coordinates
-    eval $(xdotool getmouselocation --shell)
-    startx=$X
-    starty=$Y
+# Script flags, set to defaults
+output=""
+w=$COMPASS_WIDTH
+h=$COMPASS_HEIGHT
+x=$COMPASS_X
+y=$COMPASS_Y
 
-    # Capture a snapshot of the window
-    #xwd -root -silent | convert xwd:- -depth 8 -crop "478x579+31+31" txt:-
-    xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+1698+968" txt:compass.txt
-    #xwd -root -silent | convert xwd:- -depth 8 txt:-
+# Parse command line arguments
+while (( "$#" )); do
+    if [[ "$1" == "-f" ]]; then
+        shift
+        output=$1
+        shift
+    fi
+
+    if [[ "$1" == "--file" ]]; then
+        shift
+        output=$1
+        shift
+    fi
+
+    if [[ "$1" == "-h" ]]; then
+        usage
+        exit 0
+    fi
+
+    if [[ "$1" == "--help" ]]; then
+        usage
+        exit 0
+    fi
+
+    # Parse width, height, x and y
+    if [ $# -ne 0 ]; then
+        w=$1
+        shift
+    fi
+
+    if [ $# -ne 0 ]; then
+        h=$1
+        shift
+    fi
+
+    if [ $# -ne 0 ]; then
+        x=$1
+        shift
+    fi
+
+    if [ $# -ne 0 ]; then
+        y=$1
+        shift
+    fi
+
+    # Check for proper number of args.
+    if [ $# -ne 0 ]
+    then
+        usage
+        exit 1
+    fi
+done
+
+
+main() {
+    init_oolite_window
+    focus_oolite_window
+
+    if [ -z $output ]; then
+        greenEnough='#[0-5][0-5]F[5-9|A-F][0-5][0-5]'
+        line=$(capture_snapshot $w $h $x $y | grep -m1 $greenEnough)
+        to_coords $line
+
+        echo
+        echo "WxH: ${w}x${h}"
+        echo "XxY: ${x}x${y}"
+        echo
+        echo "location: ${curX}x${curY}"
+        echo
+    else
+        write_snapshot $w $h $x $y $output
+        echo
+        echo "Image written to $output"
+        echo
+    fi
 }
 
-function capturecompass() {
-    # Move to the Oolite window
-    xdotool mousemove --window $WID 0 0
-    # Get the mouse coordinates
-    eval $(xdotool getmouselocation --shell)
-    startx=$X
-    starty=$Y
-
-    # Capture a snapshot of the window
-    xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+1698+968" txt:- | grep -m1 '#02F605'
-
-}
-
-function capturecompass2() {
-    # Move to the Oolite window
-    xdotool mousemove --window $WID 0 0
-    # Get the mouse coordinates
-    eval $(xdotool getmouselocation --shell)
-    startx=$X
-    starty=$Y
-    echo "origin: ${startx}x${starty}"
-    let offsetx=$startx+476
-    let offsety=$starty+576
-    echo "offset: ${offsetx}x${offsety}"
-
-    # Capture a snapshot of the window
-    #xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+1698+968" txt:- | grep -m1 '#02F605'
-    greenEnough='#[0-5][0-5]F[5-9|A-F][0-5][0-5]'
-    firstGreen=$(xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+${offsetx}+${offsety}" txt:- | grep -m1 $greenEnough)
-    #firstGreen=$(xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+${offsetx}+${offsety}" txt:- | grep -m1 '#[0-5][0-5]F[5-9|A-F][0-5][0-5]')
-    echo "data: $firstGreen"
-
-    tocoords $firstGreen
-    echo $curX "x" $curY
-    #xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+${offsetx}+${offsety}" compass.png
-    #xwd -root -silent | convert xwd:- -depth 8 -crop "34x34+${offsetx}+${offsety}" compass.txt
-
-}
-
-function tocoords() {
-    eval $(echo $1 | awk 'BEGIN { FS="[,:]" }; { printf("curX=%d\ncurY=%d\n", $1, $2) }')
-}
-
-function showcoords() {
-    eval $(xdotool getmouselocation --shell)
-    let relx=X-startx
-    let rely=Y-starty
-    echo $relx $rely
-}
-
-
-capturecompass2
-#capturecompasstxt
-
-function grabfirstinstance() {
-    first=$(cat ./compass.txt | grep -m1 '#02F605')
-    eval $(echo $first | awk 'BEGIN { FS="[,:]" }; { printf("curX=%d\ncurY=%d\n", $1, $2) }')
-    echo $curX "x" $curY
-}
-
-function doit() {
-    grabfirstinstance
-}
-
+main
 
