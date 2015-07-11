@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 source bot-funcs.sh
+source bot-util-funcs.sh
 
 function usage(){
     echo 'dumpimg WID HGT X Y OUTPUTFILE'
@@ -37,7 +38,7 @@ echo
 init_oolite_window
 
 # Capture a snapshot of the window
-xwd -name "$WIN_NAME" -silent | convert xwd:- -depth 8 -crop $cropStr $output
+write_snapshot $width $height $originX $originY $output
 
 exit 0
 

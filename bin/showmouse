@@ -1,22 +1,12 @@
 #!/usr/bin/env bash
 
-WID=$(xdotool search --name "Oolite v1.80" | head -1)
-xdotool windowactivate --sync $WID
+source bot-util-funcs.sh
 
-function show_coords() {
-    eval $(xdotool getmouselocation --shell)
-    let relx=X-startx
-    let rely=Y-starty
-    echo "$X $Y ($relx $rely)"
-}
-
-xdotool mousemove --window $WID 0 0
-eval $(xdotool getmouselocation --shell)
-startx=$X
-starty=$Y
+init_oolite_window
+focus_oolite_window
 
 while true
 do
-    show_coords
+    display_mouse_coords
 done
 
