@@ -135,8 +135,16 @@ store_mouse_location() {
     mouseY=$Y
 }
 
+move_mouse_to() {
+    xdotool mousemove $1 $2
+}
+
+move_mouse_to_relative() {
+    xdotool mousemove --window $WID $1 $2
+}
+
 restore_mouse_location() {
-    xdotool mousemove $mouseX $mouseY
+    move_mouse_to $mouseX $mouseY
 }
 
 send_key() {
@@ -565,7 +573,7 @@ mark_ind() {
     store_mouse_location
 
     goto_system_nav
-    xdotool mousemove --window $WID $IND_PLANET_X $IND_PLANET_Y
+    move_mouse_to_relative $IND_PLANET_X $IND_PLANET_Y
     left_click
 
     # Restore the mouse location
@@ -577,7 +585,7 @@ mark_ag() {
     store_mouse_location
 
     goto_system_nav
-    xdotool mousemove --window $WID $AG_PLANET_X $AG_PLANET_Y
+    move_mouse_to_relative $AG_PLANET_X $AG_PLANET_Y
     left_click
 
     # Restore the mouse location
