@@ -124,7 +124,7 @@ display_status() {
 #
 # Main trading route
 #
-function run_route() {
+run_route() {
     buy_cargo $nextPlanet
     mark_next_planet $nextPlanet
     quick_save
