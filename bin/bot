@@ -1,178 +1,184 @@
 #!/usr/bin/env bash
 
-DLY=50
-ARROWDLY=100
+source bot-funcs.sh
 
-function sendkey() {
-    xdotool key --delay $DLY $1
+usage() {
+    echo "Usage: ${0##*/} [options]"
+    echo
+    echo "  Options:"
+    echo "    -h, --help         - this help"
+    echo "    -i, --interactive  - ask before starting each route cycle [def:off]"
+    echo "    -q, --quiet        - don't display status updates         [def:off]"
+    echo
 }
 
-function keypress() {
-    xdotool keydown --delay $DLY $1
-    xdotool sleep $2
-    xdotool keyup --delay $DLY $1
+# Script flags, set to defaults
+interactive=false
+quiet=false
+
+# Parse command line arguments
+while (( "$#" )); do
+    if [[ "$1" == "-i" ]]; then
+        interactive=true
+        shift
+    fi
+
+    if [[ "$1" == "--interactive" ]]; then
+        interactive=true
+        shift
+    fi
+
+    if [[ "$1" == "-h" ]]; then
+        usage
+        exit 0
+    fi
+
+    if [[ "$1" == "--help" ]]; then
+        usage
+        exit 0
+    fi
+
+    if [[ "$1" == "-q" ]]; then
+        quiet=true
+        shift
+    fi
+
+    if [[ "$1" == "--quiet" ]]; then
+        quiet=true
+        shift
+    fi
+done
+
+# Display menu allowing user to select current (starting) planet
+get_current_planet() {
+    PS3="Select your current location: "
+    options=($AG_PLANET_NAME $IND_PLANET_NAME "Quit")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            $AG_PLANET_NAME)
+                currPlanet="ag"
+                currPlanetName=$AG_PLANET_NAME
+                break
+                ;;
+            $IND_PLANET_NAME)
+                currPlanet="ind"
+                currPlanetName=$IND_PLANET_NAME
+                break
+                ;;
+            "Quit")
+                currPlanet="quit"
+                break
+                ;;
+            *)
+                echo "Invalid choice"
+                ;;
+        esac
+    done
+
+    if [[ "$currPlanet" == "quit" ]]; then
+        echo "Goodbye."
+        exit 0
+    fi
 }
 
-function leftclick() {
-    xdotool mousedown 1
-    xdotool sleep 0.5
-    xdotool mouseup 1
+#
+# Toggle the nextPlanet vars based on the currPlanet
+#
+set_next_planet() {
+    if [[ "$currPlanet" == "ag" ]]; then
+        nextPlanet="ind"
+        nextPlanetName=$IND_PLANET_NAME
+    else
+        nextPlanet="ag"
+        nextPlanetName=$AG_PLANET_NAME
+    fi
 }
 
-function gotostatus() {
-    sendkey 5
+#
+# Toggle the currPlanet with the nextPlanet
+#
+update_current_planet() {
+    currPlanet=$nextPlanet
+    if [[ "$currPlanet" == "ag" ]]; then
+        currPlanetName=$AG_PLANET_NAME
+    else
+        currPlanetName=$IND_PLANET_NAME
+    fi
+
+    set_next_planet
 }
 
-function gotonavchart() {
-    # Make sure we don't go to the galactic chart by
-    # going to the status screen first...
-    gotostatus
-    sendkey 6
+#
+# Display a status message to the user (unless --quiet option is true)
+#
+# Args:
+#   message to display
+#
+display_status() {
+    if [[ "$quiet" == false ]]; then
+        echo $1
+    fi
 }
 
-function gotomarket() {
-    sendkey 8
-}
+#
+# Main trading route
+#
+run_route() {
+    buy_cargo $nextPlanet
+    mark_next_planet $nextPlanet
+    quick_save
 
-function buyliquor() {
-    gotostatus
-    gotomarket
-    xdotool key --delay $ARROWDLY Down Down Down Down
-    xdotool key --delay $ARROWDLY Return
-}
+    if [[ "$interactive" == "true" ]]; then
+        echo "Ready to launch for $nextPlanetName"
+        pause_shell "Press [Enter] when you're ready"
+    fi
 
-function buycomputers() {
-    gotostatus
-    gotomarket
-    xdotool key --delay $ARROWDLY Down Down Down Down Down Down Down
-    xdotool key --delay $ARROWDLY Return
-}
-
-function buyfurs() {
-    gotostatus
-    gotomarket
-    xdotool key --delay $ARROWDLY Down Down Down Down Down Down Down Down Down Down Down
-    xdotool key --delay $ARROWDLY Return
-}
-
-function quicksave() {
-    sendkey 2
-    sendkey Return
-}
-
-function refuel() {
-    gotostatus
-    sendkey 3
-    sendkey Return
-}
-
-function launch() {
-    sendkey F1
-    xdotool sleep 2
-}
-
-function aimdown() {
-    keypress Up 1.5
-}
-
-function aimup() {
-    keypress Down 1.5
-}
-
-function fireinjectors() {
-    keypress i $1
-}
-
-function dock() {
-    sendkey shift+c
-}
-
-function markxeoner() {
-    # Make sure we don't go to the galactic chart by
-    # going to the market first...
-    gotomarket
-    sendkey 6
-    xdotool mousemove --window $WID 406 218
-    leftclick
-}
-
-function markxexedi() {
-    # Make sure we don't go to the galactic chart by
-    # going to the market first...
-    gotomarket
-    sendkey 6
-    xdotool mousemove --window $WID 292 299
-    leftclick
-}
-
-function enterhyper() {
-    sendkey h
-    xdotool sleep 20
-}
-
-function jump() {
-    sendkey j
-}
-
-function pauseshell() {
-    read -p "$*"
-    xdotool windowactivate --sync $WID
-}
-
-function runroute() {
-    refuel
-    buycomputers
-    markxeoner
-    quicksave
     launch
-    aimdown
-    fireinjectors 4
-    enterhyper
-    aimdown
-    fireinjectors 20
+    display_status "Beginning route to $nextPlanetName"
+    pitch_down 1.5
+    fire_injectors 8
+    enter_hyper
+    pitch_down 1.5
+    fire_injectors 40
     jump
-    sleep 15
-    aimup
+    wait_for 15
+    pitch_up 1.6
 
-    echo "Maneuver to Xeoner then..."
-    pauseshell "Press [Enter] when you've docked"
+    display_status "Navigating to ${nextPlanetName}..."
+    navigate_to_station
 
-    # Re-buying computers is the same as selling them
-    buycomputers
-    buyfurs
+    update_current_planet
+    display_status "Docked at $currPlanetName"
+    sell_cargo $currPlanet
     refuel
-    markxexedi
-    quicksave
-    launch
-    aimdown
-    fireinjectors 4
-    enterhyper
-    aimdown
-    fireinjectors 20
-    jump
-    sleep 15
-    aimup
-
-    echo "Maneuver to Xexedi then..."
-    pauseshell "Press [Enter] when you've docked"
-
-    # Re-buying furs/liquor is the same as selling them
-    buyfurs
 }
 
-WID=$(xdotool search --name "Oolite v1\.80" | head -1)
+# Find and initialize our game window
+init_oolite_window
 
-echo "To start, you should be located on Xexedi station,"
-echo "have NOT refueled yet,"
-echo "with empty cargo holds,"
+echo
+echo "Oolite Merchant Bot"
+echo
+
+get_current_planet
+set_next_planet
+
+echo
+echo "Before starting, you should have empty cargo holds,"
+echo "and have enough fuel to get to $nextPlanetName"
 echo
 echo "Use Ctrl-c to exit"
+echo
+
+pause_shell "Press [Enter] when you're ready"
+
+# Before we start,
+store_empty_cargo_state
 
 
-pauseshell "Press [Enter] when you're ready"
-
-COUNTER=0
-while [  $COUNTER -lt 10 ]; do
-    runroute
+while true
+do
+    run_route
 done
 
